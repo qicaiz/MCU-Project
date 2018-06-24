@@ -1,3 +1,8 @@
+/**
+* 通过wifi控制继电器，从而控制插座
+*
+*/
+
 #include <reg52.h>
 #define uchar unsigned char 
 #define uint unsigned int 
@@ -58,9 +63,10 @@ uint i;
 void main()
 {
 	i=0;
+	JDQ=0;
 	initEsp();
-	
 	while(1);
+	
 }
 
 void uart() interrupt 4
@@ -82,10 +88,10 @@ void uart() interrupt 4
 			i=0;
 			switch(receiveTable[9])
 			{
-				case '1':
+				case '0':
 					JDQ=0;
 					break;
-				case '2':
+				case '1':
 					JDQ=1;
 					break;
 				
