@@ -1,0 +1,328 @@
+C51 COMPILER V9.59.0.0   MAIN                                                              06/27/2018 15:16:07 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\main
+                    -.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          /**
+   2          *单片机通过ESP8266 WiFi模块将温度数据传送给APP
+   3          *
+   4          *APP发送指令控制单片机的LED灯，以下为APP发送给单片机的指令：
+   5          *
+   6          *‘1’为开红色led       ‘2’为关红色led
+   7          *‘3’为开黄色led       ‘4’为关黄色led
+   8          *‘5’为开蓝色led       ‘6’为关蓝色led
+   9          *‘7’为发送温度数据   ‘8’为停止发送温度数据
+  10          *
+  11          */
+  12          
+  13          #include <reg52.h>
+  14          #define uchar unsigned char 
+  15          #define uint unsigned int 
+  16          
+  17          //红色LED
+  18          sbit RedLED=P2^0;
+  19          //黄色LED
+  20          sbit YellowLED=P2^3;
+  21          //蓝色LED
+  22          sbit BlueLED=P2^6;
+  23          //定义DS18B20的信号线端口
+  24          sbit DQ = P2^7; 
+  25          //接收数组
+  26          uchar receiveTable[10];
+  27          //温度存储数组
+  28          uchar dis_buffer[4];  
+  29          //发送温度数据标志位
+  30          uint send;
+  31          //用于串口中断数组
+  32          uint i;
+  33          //用于温度缓存数组
+  34          uchar m;
+  35          //用于定时器0
+  36          uchar n;
+  37          
+  38          /**
+  39          *延时函数
+  40          */
+  41          void delay(uint x)
+  42          {
+  43   1        while(x)   
+  44   1        x--;
+  45   1      }
+  46          
+  47          /**
+  48          *DS18B20初始化函数
+  49          */
+  50          void Init_DS18B20(void)
+  51          {
+  52   1        unsigned char x=0;
+  53   1        DQ = 1;         //DQ复位
+  54   1        delay(8);       //稍做延时
+C51 COMPILER V9.59.0.0   MAIN                                                              06/27/2018 15:16:07 PAGE 2   
+
+  55   1        DQ = 0;         //单片机将DQ拉低
+  56   1        delay(80);      //精确延时 大于 480us
+  57   1        DQ = 1;         //拉高总线
+  58   1        delay(14);
+  59   1        x=DQ;           //稍做延时后 如果x=0则初始化成功 x=1则初始化失败
+  60   1        delay(20);
+  61   1      }
+  62          
+  63          /**
+  64          *从18B20中读一个字节
+  65          */
+  66          uchar ReadOneChar(void)
+  67          {
+  68   1        uchar i=0;
+  69   1        uchar dat = 0;
+  70   1        for (i=8;i>0;i--)
+  71   1        {
+  72   2          DQ = 0;   // 给脉冲信号
+  73   2          dat>>=1;
+  74   2          DQ = 1;   // 给脉冲信号
+  75   2          if(DQ)
+  76   2          dat|=0x80;  
+  77   2          delay(8);
+  78   2        }
+  79   1        return(dat);
+  80   1      }
+  81          
+  82          /**
+  83          *向18B20中写一个字节
+  84          */
+  85          void Write_OneChar(uchar dat)
+  86          {
+  87   1        uchar i=0;
+  88   1        for (i=8; i>0; i--)
+  89   1        {
+  90   2          DQ = 0;     //给脉冲信号
+  91   2          DQ = dat & 0x01;
+  92   2          delay(5); 
+  93   2          DQ = 1;     //给脉冲信号
+  94   2          dat >>= 1;
+  95   2        }
+  96   1        delay(4);
+  97   1      }
+  98          
+  99          /**
+ 100          *从18B20中读取一个字节
+ 101          */
+ 102          int Read_Temperature(void)
+ 103          {
+ 104   1         uchar i = 0,t = 0,a,b;
+ 105   1         int temp;
+ 106   1         Init_DS18B20();
+ 107   1         Write_OneChar(0xcc);   // 跳过读序号列号的操作
+ 108   1         Write_OneChar(0x44);   // 启动温度转换
+ 109   1         Init_DS18B20();
+ 110   1         Write_OneChar(0xcc);   //跳过读序号列号的操作
+ 111   1         Write_OneChar(0xbe);   //读取温度寄存器等（共可读9个寄存器） 前两个就是温度
+ 112   1         i = ReadOneChar();           //读取温度值低位
+ 113   1         t = ReadOneChar();           //读取温度值高位
+ 114   1         a = i & 0x0f;
+ 115   1         b = t;
+ 116   1         i = i >> 4;             //低位右移4位，舍弃小数部分
+C51 COMPILER V9.59.0.0   MAIN                                                              06/27/2018 15:16:07 PAGE 3   
+
+ 117   1         t = t << 4;             //高位左移4位，舍弃符号位
+ 118   1         t = t | i;
+ 119   1         temp = (t + a * 0.0625) * 100; //得到一个比实际温度扩到100倍的值，主要是为了更好�
+             -�显示和传输          
+ 120   1         return(temp);                  //返回温度值
+ 121   1      }
+ 122          
+ 123          /**
+ 124          *初始化定时器0
+ 125          */
+ 126          void timer0_init(void)                      
+ 127          {
+ 128   1         TMOD = 0x21;   //定时器0工作在方式1，定时器1工作在方式2
+ 129   1         TH0 = 0x4B;    //定时器0溢出时间50ms
+ 130   1         TL0 = 0xFF;
+ 131   1         EA = 1;        //开总中断
+ 132   1         ET0 = 1;       //开定时器0中断
+ 133   1         TR0 = 1;       //开定时器0
+ 134   1      }
+ 135          
+ 136          /**
+ 137          *延时函数：单位 ms 
+ 138          */
+ 139          void delayms(uint x)
+ 140          {
+ 141   1        uint i,j;
+ 142   1        for(i=x;i>0;i--)
+ 143   1          for(j=110;j>0;j--);
+ 144   1      }
+ 145          
+ 146          /**
+ 147          *串口发送一个字节
+ 148          */
+ 149          void sendChar(uchar a)
+ 150          {
+ 151   1        SBUF = a;
+ 152   1        while(TI==0);
+ 153   1        TI=0;
+ 154   1      }
+ 155          
+ 156          /**
+ 157          *串口发送字符串
+ 158          */
+ 159          void sendString(uchar *s)
+ 160          {
+ 161   1        while(*s!='\0')
+ 162   1        {
+ 163   2          sendChar(*s);
+ 164   2          s++;
+ 165   2        }
+ 166   1      }
+ 167          
+ 168          /**
+ 169          *初始化ESP8266模块
+ 170          */
+ 171          void initEsp()
+ 172          {
+ 173   1        TMOD=0x21;    //定时器1工作在方式2
+ 174   1        TH1 = 0xfd;   //波特率9600
+ 175   1        TL1 = 0xfd;
+ 176   1        SM0=0;        //串口工作在方式1
+ 177   1        SM1=1;
+C51 COMPILER V9.59.0.0   MAIN                                                              06/27/2018 15:16:07 PAGE 4   
+
+ 178   1        EA = 1;       //开总中断
+ 179   1        REN = 1;      //使能串口
+ 180   1        TR1 = 1;      //定时器1开始计时
+ 181   1        delayms(50);
+ 182   1        sendString("AT+CWMODE=2\r\n");    //station模式
+ 183   1        delayms(50);  
+ 184   1        sendString("AT+CIOBAUD=9600\r\n");//设置波特率9600
+ 185   1        delayms(50);  
+ 186   1        sendString("AT+CIPMUX=1\r\n");    //允许多连接
+ 187   1        delayms(50);  
+ 188   1        sendString("AT+CIPSERVER=1\r\n"); //建立TCP Server
+ 189   1        delayms(50);  
+ 190   1        ES = 1;       //开串口中断
+ 191   1      }
+ 192          
+ 193          
+ 194          void main()
+ 195          {
+ 196   1          RedLED=0;
+ 197   1          YellowLED=0;
+ 198   1          BlueLED=0;
+ 199   1          i=0;
+ 200   1          send=0;
+ 201   1          initEsp();
+ 202   1          timer0_init();           //调用T0初始化函数
+ 203   1          while(1)
+ 204   1          {
+ 205   2            while(send)
+ 206   2            {
+ 207   3              delayms(2);         //发送温度数据
+ 208   3              sendString( "AT+CIPSTART=1,\"TCP\",\"192.168.4.2\",5000\r\n");
+ 209   3              delayms(2);
+ 210   3              sendString("AT+CIPSEND=1,4\r\n");
+ 211   3              delayms(2);
+ 212   3              for(m = 0;m <= 3;m++)
+ 213   3              {
+ 214   4                sendChar(dis_buffer[m] + 48);
+ 215   4              }     
+ 216   3              delayms(1000);      //发送间隔1s
+ 217   3            }
+ 218   2          }
+ 219   1      }
+ 220          
+ 221          /**
+ 222          *定时器0中断，采集温度，采集频率2Hz
+ 223          */
+ 224          void timer0_isr(void) interrupt 1
+ 225          {
+ 226   1        int temp; 
+ 227   1        TR0 = 0;
+ 228   1        TH0 = 0x4B;                       //重新赋初值
+ 229   1        TL0 = 0xFF;
+ 230   1        TR0 = 1;
+ 231   1        n++;
+ 232   1        if(n>=10)                         //定时器时间为50ms，利用n来达到记时500ms，10*50
+ 233   1        {
+ 234   2          n = 0;
+ 235   2          temp = Read_Temperature();      //将温度数据存入数组
+ 236   2          dis_buffer[0] = temp / 1000;
+ 237   2          dis_buffer[1] = temp % 1000 / 100;
+ 238   2          dis_buffer[2] = temp % 100 / 10;
+ 239   2          dis_buffer[3] = temp % 10;
+C51 COMPILER V9.59.0.0   MAIN                                                              06/27/2018 15:16:07 PAGE 5   
+
+ 240   2        }
+ 241   1       
+ 242   1      }
+ 243          
+ 244          /**
+ 245          *串口中断，接收数据
+ 246          */
+ 247          void uart() interrupt 4
+ 248          {
+ 249   1        if(RI == 1)   
+ 250   1        {
+ 251   2          RI = 0;                       //清除串口接收标志位
+ 252   2          receiveTable[i]=SBUF;         //将接收到的数据存入缓存数组
+ 253   2          if(receiveTable[0]=='+')      //判断收到的数据格式是否合法
+ 254   2          {
+ 255   3            i++;
+ 256   3          }
+ 257   2          else
+ 258   2          {
+ 259   3            i=0;
+ 260   3          }
+ 261   2          if(i==10)                     
+ 262   2          {
+ 263   3            i=0;
+ 264   3            switch(receiveTable[9])     //数组中第十个字符为收到的数据
+ 265   3            {
+ 266   4              case '1':                 //‘1’为开红色led
+ 267   4                RedLED=0;
+ 268   4                break;
+ 269   4              case '2':                 //‘2’为关红色led
+ 270   4                RedLED=1;
+ 271   4                break;
+ 272   4              case '3':                 //‘3’为开黄色led
+ 273   4                YellowLED=0;
+ 274   4                break;
+ 275   4              case '4':                 //‘4’为关黄色led
+ 276   4                YellowLED=1;
+ 277   4                break;
+ 278   4              case '5':                 //‘5’为开蓝色led
+ 279   4                BlueLED=0;
+ 280   4                break;
+ 281   4              case '6':                 //‘6’为关蓝色led
+ 282   4                BlueLED=1;
+ 283   4                break;
+ 284   4              case '7':                 //‘7’为发送温度数据
+ 285   4                send=1;
+ 286   4                break;
+ 287   4              case '8':                 //‘8’为停止发送温度数据
+ 288   4                send=0;
+ 289   4                break;
+ 290   4            }
+ 291   3          }
+ 292   2        }
+ 293   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    813    ----
+   CONSTANT SIZE    =    121    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     20       2
+C51 COMPILER V9.59.0.0   MAIN                                                              06/27/2018 15:16:07 PAGE 6   
+
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
