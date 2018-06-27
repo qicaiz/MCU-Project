@@ -3,10 +3,10 @@
 *
 *APP发送指令控制单片机的LED灯，以下为APP发送给单片机的指令：
 *
-*‘1’为开红色led				‘2’为关红色led
-*‘3’为开黄色led				‘4’为关黄色led
-*‘5’为开蓝色led				‘6’为关蓝色led
-*‘7’为发送温度数据		‘8’为停止发送温度数据
+*‘3’为开红色led				‘4’为关红色led
+*‘5’为开黄色led				‘6’为关黄色led
+*‘7’为开蓝色led				‘8’为关蓝色led
+*‘t’为发送温度数据		‘s’为停止发送温度数据
 *
 */
 
@@ -250,6 +250,8 @@ void uart() interrupt 4
   {
 		RI = 0;     									//清除串口接收标志位
 		receiveTable[i]=SBUF;					//将接收到的数据存入缓存数组
+																	//esp8266在收到数据并转发给单片机时的数据格式：
+																	//+IPD,<client号>,<收到的字符长度>:收到的字符，比如+IPD,0,5:hello
 		if(receiveTable[0]=='+')			//判断收到的数据格式是否合法
 		{
 			i++;
@@ -263,28 +265,28 @@ void uart() interrupt 4
 			i=0;
 			switch(receiveTable[9])			//数组中第十个字符为收到的数据
 			{
-				case '1':									//‘1’为开红色led
+				case '3':									//‘3’为开红色led
 					RedLED=0;
 					break;
-				case '2':									//‘2’为关红色led
+				case '4':									//‘4’为关红色led
 					RedLED=1;
 					break;
-				case '3':									//‘3’为开黄色led
+				case '5':									//‘5’为开黄色led
 					YellowLED=0;
 					break;
-				case '4':									//‘4’为关黄色led
+				case '6':									//‘6’为关黄色led
 					YellowLED=1;
 					break;
-				case '5':									//‘5’为开蓝色led
+				case '7':									//‘7’为开蓝色led
 					BlueLED=0;
 					break;
-				case '6':									//‘6’为关蓝色led
+				case '8':									//‘8’为关蓝色led
 					BlueLED=1;
 					break;
-				case '7':									//‘7’为发送温度数据
+				case 't':									//‘t’为发送温度数据
 					send=1;
 					break;
-				case '8':									//‘8’为停止发送温度数据
+				case 's':									//‘s’为停止发送温度数据
 					send=0;
 					break;
 			}

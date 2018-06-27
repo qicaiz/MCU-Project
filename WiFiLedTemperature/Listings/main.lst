@@ -1,4 +1,4 @@
-C51 COMPILER V9.59.0.0   MAIN                                                              06/27/2018 15:16:07 PAGE 1   
+C51 COMPILER V9.59.0.0   MAIN                                                              06/27/2018 18:05:37 PAGE 1   
 
 
 C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
@@ -13,10 +13,10 @@ line level    source
    3          *
    4          *APP发送指令控制单片机的LED灯，以下为APP发送给单片机的指令：
    5          *
-   6          *‘1’为开红色led       ‘2’为关红色led
-   7          *‘3’为开黄色led       ‘4’为关黄色led
-   8          *‘5’为开蓝色led       ‘6’为关蓝色led
-   9          *‘7’为发送温度数据   ‘8’为停止发送温度数据
+   6          *‘3’为开红色led       ‘4’为关红色led
+   7          *‘5’为开黄色led       ‘6’为关黄色led
+   8          *‘7’为开蓝色led       ‘8’为关蓝色led
+   9          *‘t’为发送温度数据   ‘s’为停止发送温度数据
   10          *
   11          */
   12          
@@ -62,7 +62,7 @@ line level    source
   52   1        unsigned char x=0;
   53   1        DQ = 1;         //DQ复位
   54   1        delay(8);       //稍做延时
-C51 COMPILER V9.59.0.0   MAIN                                                              06/27/2018 15:16:07 PAGE 2   
+C51 COMPILER V9.59.0.0   MAIN                                                              06/27/2018 18:05:37 PAGE 2   
 
   55   1        DQ = 0;         //单片机将DQ拉低
   56   1        delay(80);      //精确延时 大于 480us
@@ -126,7 +126,7 @@ line level    source
  114   1         a = i & 0x0f;
  115   1         b = t;
  116   1         i = i >> 4;             //低位右移4位，舍弃小数部分
-C51 COMPILER V9.59.0.0   MAIN                                                              06/27/2018 15:16:07 PAGE 3   
+C51 COMPILER V9.59.0.0   MAIN                                                              06/27/2018 18:05:37 PAGE 3   
 
  117   1         t = t << 4;             //高位左移4位，舍弃符号位
  118   1         t = t | i;
@@ -190,7 +190,7 @@ line level    source
  175   1        TL1 = 0xfd;
  176   1        SM0=0;        //串口工作在方式1
  177   1        SM1=1;
-C51 COMPILER V9.59.0.0   MAIN                                                              06/27/2018 15:16:07 PAGE 4   
+C51 COMPILER V9.59.0.0   MAIN                                                              06/27/2018 18:05:37 PAGE 4   
 
  178   1        EA = 1;       //开总中断
  179   1        REN = 1;      //使能串口
@@ -254,7 +254,7 @@ line level    source
  237   2          dis_buffer[1] = temp % 1000 / 100;
  238   2          dis_buffer[2] = temp % 100 / 10;
  239   2          dis_buffer[3] = temp % 10;
-C51 COMPILER V9.59.0.0   MAIN                                                              06/27/2018 15:16:07 PAGE 5   
+C51 COMPILER V9.59.0.0   MAIN                                                              06/27/2018 18:05:37 PAGE 5   
 
  240   2        }
  241   1       
@@ -269,57 +269,59 @@ line level    source
  250   1        {
  251   2          RI = 0;                       //清除串口接收标志位
  252   2          receiveTable[i]=SBUF;         //将接收到的数据存入缓存数组
- 253   2          if(receiveTable[0]=='+')      //判断收到的数据格式是否合法
- 254   2          {
- 255   3            i++;
- 256   3          }
- 257   2          else
- 258   2          {
- 259   3            i=0;
- 260   3          }
- 261   2          if(i==10)                     
- 262   2          {
- 263   3            i=0;
- 264   3            switch(receiveTable[9])     //数组中第十个字符为收到的数据
- 265   3            {
- 266   4              case '1':                 //‘1’为开红色led
- 267   4                RedLED=0;
- 268   4                break;
- 269   4              case '2':                 //‘2’为关红色led
- 270   4                RedLED=1;
- 271   4                break;
- 272   4              case '3':                 //‘3’为开黄色led
- 273   4                YellowLED=0;
- 274   4                break;
- 275   4              case '4':                 //‘4’为关黄色led
- 276   4                YellowLED=1;
- 277   4                break;
- 278   4              case '5':                 //‘5’为开蓝色led
- 279   4                BlueLED=0;
- 280   4                break;
- 281   4              case '6':                 //‘6’为关蓝色led
- 282   4                BlueLED=1;
- 283   4                break;
- 284   4              case '7':                 //‘7’为发送温度数据
- 285   4                send=1;
- 286   4                break;
- 287   4              case '8':                 //‘8’为停止发送温度数据
- 288   4                send=0;
- 289   4                break;
- 290   4            }
- 291   3          }
- 292   2        }
- 293   1      }
+ 253   2                                        //esp8266在收到数据并转发给单片机时的数据格式：
+ 254   2                                        //+IPD,<client号>,<收到的字符长度>:收到的字符，比如+IPD,0,5:hello
+ 255   2          if(receiveTable[0]=='+')      //判断收到的数据格式是否合法
+ 256   2          {
+ 257   3            i++;
+ 258   3          }
+ 259   2          else
+ 260   2          {
+ 261   3            i=0;
+ 262   3          }
+ 263   2          if(i==10)                     
+ 264   2          {
+ 265   3            i=0;
+ 266   3            switch(receiveTable[9])     //数组中第十个字符为收到的数据
+ 267   3            {
+ 268   4              case '3':                 //‘3’为开红色led
+ 269   4                RedLED=0;
+ 270   4                break;
+ 271   4              case '4':                 //‘4’为关红色led
+ 272   4                RedLED=1;
+ 273   4                break;
+ 274   4              case '5':                 //‘5’为开黄色led
+ 275   4                YellowLED=0;
+ 276   4                break;
+ 277   4              case '6':                 //‘6’为关黄色led
+ 278   4                YellowLED=1;
+ 279   4                break;
+ 280   4              case '7':                 //‘7’为开蓝色led
+ 281   4                BlueLED=0;
+ 282   4                break;
+ 283   4              case '8':                 //‘8’为关蓝色led
+ 284   4                BlueLED=1;
+ 285   4                break;
+ 286   4              case 't':                 //‘t’为发送温度数据
+ 287   4                send=1;
+ 288   4                break;
+ 289   4              case 's':                 //‘s’为停止发送温度数据
+ 290   4                send=0;
+ 291   4                break;
+ 292   4            }
+ 293   3          }
+ 294   2        }
+ 295   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    813    ----
+   CODE SIZE        =    814    ----
    CONSTANT SIZE    =    121    ----
    XDATA SIZE       =   ----    ----
+C51 COMPILER V9.59.0.0   MAIN                                                              06/27/2018 18:05:37 PAGE 6   
+
    PDATA SIZE       =   ----    ----
    DATA SIZE        =     20       2
-C51 COMPILER V9.59.0.0   MAIN                                                              06/27/2018 15:16:07 PAGE 6   
-
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----
 END OF MODULE INFORMATION.
