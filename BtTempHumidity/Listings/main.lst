@@ -1,0 +1,206 @@
+C51 COMPILER V9.59.0.0   MAIN                                                              08/05/2018 11:47:16 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\main
+                    -.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          //****************************************************************//
+   2          //           DHT11数字温湿度传感器
+   3          //单片机 AT89S52 或 STC89C52RC
+   4          //功能   蓝牙发送温湿度数据 晶振 11.0592M 波特率 9600
+   5          //硬件   P2.0口为通讯口连接DHT11,DHT11的电源和地连接单片机的电源和地
+   6          //公司   大信物联网 https://daxiniot.taobao.com
+   7          //****************************************************************//
+   8          
+   9          #include <reg51.h>
+  10          #include <intrins.h>
+  11          
+  12          typedef unsigned char  U8;       /* defined for unsigned 8-bits integer variable           无符号8位�
+             -�型变量  */
+  13          typedef unsigned int   U16;      /* defined for unsigned 16-bits integer variable           无符号16位
+             -整型变量 */
+  14          #define uchar unsigned char
+  15          #define uint unsigned int
+  16          
+  17          //----------------IO口定义区--------------------//
+  18          sbit  P2_0  = P2^0 ;
+  19          //----------------定义区--------------------//
+  20          U8  U8temp;
+  21          U8  humidity_H,humidity_L,temperature_H,temperature_L,checkdata;
+  22          U8  str[5]= {"RS232"};
+  23          
+  24          void Delay(U16 j)
+  25          {   U8 i;
+  26   1          for(; j>0; j--)
+  27   1          {
+  28   2              for(i=0; i<27; i++);
+  29   2      
+  30   2          }
+  31   1      }
+  32          /**
+  33          *串口发送一个字节
+  34          */
+  35          void sendOneChar(uchar a)
+  36          {
+  37   1          SBUF = a;
+  38   1          while(TI==0);
+  39   1          TI=0;
+  40   1      }
+  41          
+  42          
+  43          /**
+  44          *延时函数：单位 ms
+  45          */
+  46          void delayms(uint x)
+  47          {
+  48   1          uint i,j;
+  49   1          for(i=x; i>0; i--)
+  50   1              for(j=110; j>0; j--);
+  51   1      }
+  52          /**
+C51 COMPILER V9.59.0.0   MAIN                                                              08/05/2018 11:47:16 PAGE 2   
+
+  53          *延时函数： 延时10us
+  54          */
+  55          void  Delay_10us(void)
+  56          {
+  57   1          U8 i;
+  58   1          i--;
+  59   1          i--;
+  60   1          i--;
+  61   1          i--;
+  62   1          i--;
+  63   1          i--;
+  64   1      }
+  65          
+  66          U8 computeData()
+  67          {
+  68   1          U8 i,U8comdata;
+  69   1          for(i=0; i<8; i++)
+  70   1          {
+  71   2              while(P2_0==0);
+  72   2              Delay_10us();
+  73   2              Delay_10us();
+  74   2              Delay_10us();
+  75   2              U8temp=0;
+  76   2              if(P2_0==1)
+  77   2              {
+  78   3                  U8temp=1;
+  79   3              }
+  80   2              while(P2_0==1);
+  81   2              //判断数据位是0还是1
+  82   2              // 如果高电平高过预定0高电平值则数据位为 1
+  83   2              U8comdata<<=1;
+  84   2              U8comdata|=U8temp;
+  85   2      
+  86   2          }
+  87   1          return U8comdata;
+  88   1      
+  89   1      }
+  90          
+  91          //--------------------------------
+  92          //-----湿度读取子程序 ------------
+  93          //--------------------------------
+  94          //----以下变量均为全局变量--------
+  95          //----温度高8位== temperature_H------
+  96          //----温度低8位== temperature_L------
+  97          //----湿度高8位== humidity_H-----
+  98          //----湿度低8位== humidity_L-----
+  99          //----校验 8位 == checkdata-----
+ 100          //--------------------------------
+ 101          void readData()
+ 102          {
+ 103   1          U8  humidity_H_temp,humidity_L_temp,temperature_H_temp,temperature_L_temp,checkdata_temp;
+ 104   1          //主机拉低不少于18ms
+ 105   1          P2_0=0;
+ 106   1          delayms(20);
+ 107   1          P2_0=1;
+ 108   1          //总线由上拉电阻拉高 主机延时20us
+ 109   1          Delay_10us();
+ 110   1          Delay_10us();
+ 111   1          Delay_10us();
+ 112   1          Delay_10us();
+ 113   1          //判断从机是否有低电平响应信号 如不响应则跳出，响应则向下运行
+ 114   1          if(P2_0==0)                 //T !
+C51 COMPILER V9.59.0.0   MAIN                                                              08/05/2018 11:47:16 PAGE 3   
+
+ 115   1          {
+ 116   2              while(P2_0==0);       //判断从机是否发出 80us 的低电平响应信号是否结束
+ 117   2              while(P2_0==1);       //判断从机是否发出 80us 的高电平，如发出则进入数据接收�
+             -�态
+ 118   2              //数据接收状态
+ 119   2              humidity_H_temp = computeData();
+ 120   2              humidity_L_temp = computeData();
+ 121   2              temperature_H_temp = computeData();
+ 122   2              temperature_L_temp = computeData();
+ 123   2              checkdata_temp = computeData();
+ 124   2              P2_0 = 1;   //data拉高释放总线
+ 125   2              //数据校验
+ 126   2              if(checkdata_temp = humidity_H_temp + humidity_L_temp + temperature_H_temp + temperature_L_temp)
+ 127   2              {
+ 128   3                  humidity_H = humidity_H_temp;
+ 129   3                  humidity_L = humidity_L_temp;
+ 130   3                  temperature_H = temperature_H_temp;
+ 131   3                  temperature_L = temperature_L_temp;
+ 132   3                  checkdata = checkdata_temp;
+ 133   3              }
+ 134   2          }
+ 135   1      
+ 136   1      }
+ 137          
+ 138          //----------------------------------------------
+ 139          //main()功能描述:  STC89C52RC  11.0592MHz   串口发送温湿度数据,波特率 9600
+ 140          //----------------------------------------------
+ 141          void main()
+ 142          {
+ 143   1          U8  i,j;
+ 144   1          TMOD = 0x20;          //定时器T1使用工作方式2
+ 145   1          TH1 = 253;        // 设置初值
+ 146   1          TL1 = 253;
+ 147   1          TR1 = 1;          // 开始计时
+ 148   1          SCON = 0x50;          //工作方式1，波特率9600bps，允许接收
+ 149   1          ES = 1;
+ 150   1          EA = 1;           // 打开所以中断
+ 151   1          TI = 0;
+ 152   1          RI = 0;
+ 153   1          Delay(1);         //延时100US（12M晶振)
+ 154   1          while(1)
+ 155   1          {
+ 156   2              //调用温湿度读取子程序
+ 157   2              readData();
+ 158   2              str[0]=humidity_H;
+ 159   2              str[1]=humidity_L;
+ 160   2              str[2]=temperature_H;
+ 161   2              str[3]=temperature_L;
+ 162   2              str[4]=checkdata;
+ 163   2              //发送到串口
+ 164   2              for(i=0; i<5; i++)
+ 165   2              {
+ 166   3                  sendOneChar(str[i]);
+ 167   3              }
+ 168   2              //读取模块数据周期不易小于 2S
+ 169   2              delayms(2000);
+ 170   2          }
+ 171   1      
+ 172   1      }
+*** WARNING C280 IN LINE 143 OF main.c: 'j': unreferenced local variable
+
+
+C51 COMPILER V9.59.0.0   MAIN                                                              08/05/2018 11:47:16 PAGE 4   
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    285    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     11       2
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)
