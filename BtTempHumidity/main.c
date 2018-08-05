@@ -26,7 +26,6 @@ void Delay(U16 j)
     for(; j>0; j--)
     {
         for(i=0; i<27; i++);
-
     }
 }
 /**
@@ -63,23 +62,24 @@ void  Delay_10us(void)
     i--;
 }
 
+/**
+*根据时序计算温湿度值
+*/
 U8 computeData()
 {
     U8 i,U8comdata;
     for(i=0; i<8; i++)
     {
-        while(P2_0==0);
-        Delay_10us();
+        while(P2_0==0);				//等待54us低电平
+        Delay_10us();					//延时30us确认高电平是否结束
         Delay_10us();
         Delay_10us();
         U8temp=0;
-        if(P2_0==1)
+        if(P2_0==1)						//如果高电平高过预定0高电平值则数据位为 1
         {
             U8temp=1;
         }
-        while(P2_0==1);
-        //判断数据位是0还是1
-        // 如果高电平高过预定0高电平值则数据位为 1
+        while(P2_0==1);			//等待高电平结束
         U8comdata<<=1;
         U8comdata|=U8temp;
     }
@@ -103,16 +103,16 @@ void readData()
     P2_0=0;
     delayms(20);
     P2_0=1;
-    //总线由上拉电阻拉高 主机延时20us
+    //总线由上拉电阻拉高 主机延时20us 等待DHT11低电平响应
     Delay_10us();
     Delay_10us();
     Delay_10us();
     Delay_10us();
-    //判断从机是否有低电平响应信号 如不响应则跳出，响应则向下运行
-    if(P2_0==0)                 //T !
+    //判断从机是否有低电平响应信号
+    if(P2_0==0)
     {
-        while(P2_0==0);				//判断从机是否发出 80us 的低电平响应信号是否结束
-        while(P2_0==1);				//判断从机是否发出 80us 的高电平，如发出则进入数据接收状态
+        while(P2_0==0);				//判断DHT11发出 83us 的低电平响应信号是否结束
+        while(P2_0==1);				//判断DHT11发出 87us 的高电平是否结束
         //数据接收状态
         humidity_H_temp = computeData();
         humidity_L_temp = computeData();
@@ -138,7 +138,7 @@ void readData()
 //----------------------------------------------
 void main()
 {
-    U8  i,j;
+    U8  i;
     TMOD = 0x20;          //定时器T1使用工作方式2
     TH1 = 253;        // 设置初值
     TL1 = 253;
