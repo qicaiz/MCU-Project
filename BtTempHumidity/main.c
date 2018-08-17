@@ -16,6 +16,7 @@ typedef unsigned int   U16;      /* defined for unsigned 16-bits integer variabl
 
 //----------------IO口定义区--------------------//
 sbit  P2_0  = P2^0 ;
+sbit fan=P2^5;
 //----------------定义区--------------------//
 U8  U8temp;
 U8  humidity_H,humidity_L,temperature_H,temperature_L,checkdata;
@@ -63,6 +64,22 @@ void  Delay_10us(void)
 }
 
 /**
+*延时函数： 延时10us
+*/
+void delay13us()
+{
+	U8 i;
+	i--;
+	i--;
+	i--;
+	i--;
+	i--;
+	i--;
+	i--;
+	i--;
+}
+
+/**
 *根据时序计算温湿度值
 */
 U8 computeData()
@@ -75,8 +92,8 @@ U8 computeData()
         Delay_10us();
         Delay_10us();
         U8temp=0;
-        if(P2_0==1)						//如果高电平高过预定0高电平值则数据位为 1
-        {
+        if(P2_0==1)						//如果高电平高过预定0高电平
+        {											//值则数据位为 1
             U8temp=1;
         }
         while(P2_0==1);			//等待高电平结束
@@ -102,12 +119,9 @@ void readData()
     //主机拉低不少于18ms
     P2_0=0;
     delayms(20);
+		//总线由上拉电阻拉高 主机延时13us最多20us 等待DHT11低电平响应
     P2_0=1;
-    //总线由上拉电阻拉高 主机延时20us 等待DHT11低电平响应
-    Delay_10us();
-    Delay_10us();
-    Delay_10us();
-    Delay_10us();
+		delay13us();
     //判断从机是否有低电平响应信号
     if(P2_0==0)
     {
@@ -167,4 +181,25 @@ void main()
         delayms(2000);
     }
 
+}
+
+/**************************串口中断处理函数*****************************/
+void uart() interrupt 4
+{
+	uchar a;
+	if(RI==1)
+	{
+		RI=0;
+		a=SBUF;
+		if(a=='0')
+		{
+			fan=0;
+		}
+		if(a=='1')
+		{
+			fan=1;
+		}
+		
+	}
+    
 }
