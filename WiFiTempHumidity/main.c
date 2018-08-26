@@ -1,9 +1,9 @@
 //****************************************************************//
 //           DHT11数字温湿度传感器
-//单片机 AT89S52 或 STC89C52RC
-//功能   蓝牙发送温湿度数据 晶振 11.0592M 波特率 9600
+//单片机 STC89C52RC
+//功能   WiFi发送温湿度数据 晶振 11.0592M 波特率 9600
 //硬件   P2.0口为通讯口连接DHT11,DHT11的电源和地连接单片机的电源和地
-//公司   大信物联网 https://daxiniot.taobao.com
+//		   大信物联网 https://daxiniot.taobao.com
 //****************************************************************//
 
 #include <reg51.h>
@@ -16,19 +16,11 @@ typedef unsigned int   U16;      /* defined for unsigned 16-bits integer variabl
 
 //----------------IO口定义区--------------------//
 sbit  P2_0  = P2^0 ;
-sbit fan=P2^5;
 //----------------定义区--------------------//
 U8  U8temp;
 U8  humidity_H,humidity_L,temperature_H,temperature_L,checkdata;
 U8  str[5]= {"RS232"};
 
-void Delay(U16 j)
-{   U8 i;
-    for(; j>0; j--)
-    {
-        for(i=0; i<27; i++);
-    }
-}
 /**
 *串口发送一个字节
 */
@@ -38,7 +30,7 @@ void sendOneChar(uchar a)
     while(TI==0);
     TI=0;
 }
-//send String
+//串口发送一个字符串
 void sendString(uchar *s)
 {
     while(*s!='\0')
@@ -73,7 +65,7 @@ void  Delay_10us(void)
 }
 
 /**
-*延时函数： 延时10us
+*延时函数： 延时13us
 */
 void delay13us()
 {
@@ -178,8 +170,6 @@ void main()
     sendString("AT+CIPSERVER=1\r\n");	//建立TCP Server
     delayms(50);
     ES = 1;				//开串口中断
-
-
     while(1)
     {
         //调用温湿度读取子程序
