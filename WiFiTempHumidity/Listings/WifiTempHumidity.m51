@@ -1,0 +1,334 @@
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                    08/24/2018  22:48:25  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22.2.0, INVOKED BY:
+D:\KEIL_V5\C51\BIN\BL51.EXE .\Objects\main.obj TO .\Objects\WifiTempHumidity PRINT (.\Listings\WifiTempHumidity.m51)
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  .\Objects\main.obj (MAIN)
+  D:\KEIL_V5\C51\LIB\C51S.LIB (?C_STARTUP)
+  D:\KEIL_V5\C51\LIB\C51S.LIB (?C?CLDPTR)
+  D:\KEIL_V5\C51\LIB\C51S.LIB (?C_INIT)
+
+
+LINK MAP OF MODULE:  .\Objects\WifiTempHumidity (MAIN)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     000BH     UNIT         ?DT?MAIN
+            DATA    0013H     0001H     UNIT         _DATA_GROUP_
+            IDATA   0014H     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+                    0003H     07FDH                  *** GAP ***
+            CODE    0800H     008CH     UNIT         ?C_C51STARTUP
+            CODE    088CH     0087H     UNIT         ?PR?MAIN?MAIN
+            CODE    0913H     0067H     UNIT         ?CO?MAIN
+            CODE    097AH     0041H     UNIT         ?PR?READDATA?MAIN
+            CODE    09BBH     0030H     UNIT         ?PR?COMPUTEDATA?MAIN
+            CODE    09EBH     0025H     UNIT         ?PR?_DELAYMS?MAIN
+            CODE    0A10H     0020H     UNIT         ?PR?_DELAY?MAIN
+            CODE    0A30H     0019H     UNIT         ?C?LIB_CODE
+            CODE    0A49H     0013H     UNIT         ?PR?_SENDSTRING?MAIN
+            CODE    0A5CH     0011H     UNIT         ?PR?DELAY13US?MAIN
+            CODE    0A6DH     000DH     UNIT         ?PR?DELAY_10US?MAIN
+            CODE    0A7AH     0008H     UNIT         ?PR?_SENDONECHAR?MAIN
+            CODE    0A82H     0008H     UNIT         ?C_INITSEG
+
+
+
+OVERLAY MAP OF MODULE:   .\Objects\WifiTempHumidity (MAIN)
+
+
+SEGMENT                          DATA_GROUP 
+  +--> CALLED SEGMENT          START    LENGTH
+----------------------------------------------
+?C_C51STARTUP                  -----    -----
+  +--> ?PR?MAIN?MAIN
+  +--> ?C_INITSEG
+
+?PR?MAIN?MAIN                  -----    -----
+  +--> ?PR?_DELAYMS?MAIN
+  +--> ?CO?MAIN
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  08/24/2018  22:48:25  PAGE 2
+
+
+  +--> ?PR?READDATA?MAIN
+  +--> ?PR?_SENDSTRING?MAIN
+  +--> ?PR?_SENDONECHAR?MAIN
+
+?PR?_DELAYMS?MAIN              -----    -----
+  +--> ?PR?_SENDSTRING?MAIN
+
+?PR?_SENDSTRING?MAIN           -----    -----
+  +--> ?PR?_SENDONECHAR?MAIN
+
+?PR?READDATA?MAIN              -----    -----
+  +--> ?PR?_DELAYMS?MAIN
+  +--> ?PR?DELAY13US?MAIN
+  +--> ?PR?COMPUTEDATA?MAIN
+
+?PR?DELAY13US?MAIN             0013H    0001H
+
+?PR?COMPUTEDATA?MAIN           -----    -----
+  +--> ?PR?DELAY_10US?MAIN
+
+?PR?DELAY_10US?MAIN            0013H    0001H
+
+
+
+SYMBOL TABLE OF MODULE:  .\Objects\WifiTempHumidity (MAIN)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        MAIN
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  C:09BBH         PUBLIC        computeData
+  D:00A0H         PUBLIC        P2
+  B:00A8H.7       PUBLIC        EA
+  B:00A0H.0       PUBLIC        P2_0
+  B:00A8H.4       PUBLIC        ES
+  C:097AH         PUBLIC        readData
+  D:0008H         PUBLIC        humidity_H
+  C:0A6DH         PUBLIC        Delay_10us
+  B:0098H.1       PUBLIC        TI
+  D:0009H         PUBLIC        checkdata
+  D:000AH         PUBLIC        humidity_L
+  C:088CH         PUBLIC        main
+  C:0A49H         PUBLIC        _sendString
+  D:0099H         PUBLIC        SBUF
+  D:0089H         PUBLIC        TMOD
+  D:000BH         PUBLIC        U8temp
+  D:008DH         PUBLIC        TH1
+  B:0098H.7       PUBLIC        SM0
+  C:0A7AH         PUBLIC        _sendOneChar
+  B:0098H.6       PUBLIC        SM1
+  D:008BH         PUBLIC        TL1
+  B:0088H.6       PUBLIC        TR1
+  D:000CH         PUBLIC        str
+  D:0011H         PUBLIC        temperature_H
+  C:0A5CH         PUBLIC        delay13us
+  D:0012H         PUBLIC        temperature_L
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  08/24/2018  22:48:25  PAGE 3
+
+
+  B:0098H.4       PUBLIC        REN
+  C:0A10H         PUBLIC        _Delay
+  C:09F2H         PUBLIC        _delayms
+  -------         PROC          _DELAY
+  D:0006H         SYMBOL        j
+  -------         DO            
+  D:0005H         SYMBOL        i
+  -------         ENDDO         
+  C:0A10H         LINE#         25
+  C:0A10H         LINE#         26
+  C:0A10H         LINE#         27
+  C:0A19H         LINE#         28
+  C:0A19H         LINE#         29
+  C:0A28H         LINE#         30
+  C:0A2FH         LINE#         31
+  -------         ENDPROC       _DELAY
+  -------         PROC          _SENDONECHAR
+  D:0007H         SYMBOL        a
+  C:0A7AH         LINE#         35
+  C:0A7AH         LINE#         36
+  C:0A7AH         LINE#         37
+  C:0A7CH         LINE#         38
+  C:0A7FH         LINE#         39
+  C:0A81H         LINE#         40
+  -------         ENDPROC       _SENDONECHAR
+  -------         PROC          _SENDSTRING
+  D:0001H         SYMBOL        s
+  C:0A49H         LINE#         42
+  C:0A49H         LINE#         43
+  C:0A49H         LINE#         44
+  C:0A4FH         LINE#         45
+  C:0A4FH         LINE#         46
+  C:0A52H         LINE#         47
+  C:0A59H         LINE#         48
+  C:0A5BH         LINE#         50
+  -------         ENDPROC       _SENDSTRING
+  C:09EBH         SYMBOL        L?0049
+  C:09EEH         SYMBOL        L?0050
+  -------         PROC          L?0048
+  -------         ENDPROC       L?0048
+  C:09EBH         SYMBOL        L?0049
+  C:09EEH         SYMBOL        L?0050
+  -------         PROC          _DELAYMS
+  D:0006H         SYMBOL        x
+  -------         DO            
+  D:0006H         SYMBOL        i
+  D:0004H         SYMBOL        j
+  -------         ENDDO         
+  C:09F2H         LINE#         55
+  C:09F2H         LINE#         56
+  C:09F2H         LINE#         58
+  C:09FBH         LINE#         59
+  C:0A0FH         LINE#         60
+  -------         ENDPROC       _DELAYMS
+  -------         PROC          DELAY_10US
+  -------         DO            
+  D:0013H         SYMBOL        i
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  08/24/2018  22:48:25  PAGE 4
+
+
+  -------         ENDDO         
+  C:0A6DH         LINE#         64
+  C:0A6DH         LINE#         65
+  C:0A6DH         LINE#         67
+  C:0A6FH         LINE#         68
+  C:0A71H         LINE#         69
+  C:0A73H         LINE#         70
+  C:0A75H         LINE#         71
+  C:0A77H         LINE#         72
+  C:0A79H         LINE#         73
+  -------         ENDPROC       DELAY_10US
+  -------         PROC          DELAY13US
+  -------         DO            
+  D:0013H         SYMBOL        i
+  -------         ENDDO         
+  C:0A5CH         LINE#         78
+  C:0A5CH         LINE#         79
+  C:0A5CH         LINE#         81
+  C:0A5EH         LINE#         82
+  C:0A60H         LINE#         83
+  C:0A62H         LINE#         84
+  C:0A64H         LINE#         85
+  C:0A66H         LINE#         86
+  C:0A68H         LINE#         87
+  C:0A6AH         LINE#         88
+  C:0A6CH         LINE#         89
+  -------         ENDPROC       DELAY13US
+  -------         PROC          COMPUTEDATA
+  -------         DO            
+  D:0006H         SYMBOL        i
+  D:0007H         SYMBOL        U8comdata
+  -------         ENDDO         
+  C:09BBH         LINE#         94
+  C:09BBH         LINE#         95
+  C:09BBH         LINE#         97
+  C:09C7H         LINE#         98
+  C:09C7H         LINE#         99
+  C:09CAH         LINE#         100
+  C:09CDH         LINE#         101
+  C:09D0H         LINE#         102
+  C:09D3H         LINE#         103
+  C:09D6H         LINE#         104
+  C:09D9H         LINE#         105
+  C:09D9H         LINE#         106
+  C:09DCH         LINE#         107
+  C:09DCH         LINE#         108
+  C:09DFH         LINE#         109
+  C:09E3H         LINE#         110
+  C:09E7H         LINE#         111
+  C:09EAH         LINE#         112
+  C:09EAH         LINE#         113
+  -------         ENDPROC       COMPUTEDATA
+  -------         PROC          READDATA
+  -------         DO            
+  D:0005H         SYMBOL        humidity_H_temp
+  D:0004H         SYMBOL        humidity_L_temp
+  D:0003H         SYMBOL        temperature_H_temp
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  08/24/2018  22:48:25  PAGE 5
+
+
+  D:0002H         SYMBOL        temperature_L_temp
+  D:0007H         SYMBOL        checkdata_temp
+  -------         ENDDO         
+  C:097AH         LINE#         125
+  C:097AH         LINE#         126
+  C:097AH         LINE#         129
+  C:097CH         LINE#         130
+  C:0983H         LINE#         132
+  C:0985H         LINE#         133
+  C:0988H         LINE#         135
+  C:098BH         LINE#         136
+  C:098BH         LINE#         137
+  C:098EH         LINE#         138
+  C:0991H         LINE#         140
+  C:0996H         LINE#         141
+  C:099BH         LINE#         142
+  C:09A0H         LINE#         143
+  C:09A5H         LINE#         144
+  C:09A8H         LINE#         145
+  C:09AAH         LINE#         147
+  C:09B0H         LINE#         148
+  C:09B0H         LINE#         149
+  C:09B2H         LINE#         150
+  C:09B4H         LINE#         151
+  C:09B6H         LINE#         152
+  C:09B8H         LINE#         153
+  C:09BAH         LINE#         154
+  C:09BAH         LINE#         155
+  C:09BAH         LINE#         157
+  -------         ENDPROC       READDATA
+  -------         PROC          MAIN
+  -------         DO            
+  D:0006H         SYMBOL        i
+  -------         ENDDO         
+  C:088CH         LINE#         162
+  C:088CH         LINE#         163
+  C:088CH         LINE#         165
+  C:088FH         LINE#         166
+  C:0892H         LINE#         167
+  C:0895H         LINE#         168
+  C:0897H         LINE#         169
+  C:0899H         LINE#         170
+  C:089BH         LINE#         171
+  C:089DH         LINE#         172
+  C:089FH         LINE#         173
+  C:08A2H         LINE#         174
+  C:08A8H         LINE#         175
+  C:08ABH         LINE#         176
+  C:08AFH         LINE#         177
+  C:08B2H         LINE#         178
+  C:08B6H         LINE#         179
+  C:08B9H         LINE#         180
+  C:08BBH         LINE#         183
+  C:08BBH         LINE#         184
+  C:08BBH         LINE#         186
+  C:08BEH         LINE#         187
+  C:08C1H         LINE#         188
+BL51 BANKED LINKER/LOCATER V6.22.2.0                                                  08/24/2018  22:48:25  PAGE 6
+
+
+  C:08C4H         LINE#         189
+  C:08C7H         LINE#         190
+  C:08CAH         LINE#         191
+  C:08CDH         LINE#         193
+  C:08D4H         LINE#         194
+  C:08DDH         LINE#         195
+  C:08E4H         LINE#         196
+  C:08EBH         LINE#         197
+  C:08F2H         LINE#         198
+  C:08FEH         LINE#         199
+  C:08FEH         LINE#         200
+  C:0907H         LINE#         201
+  C:090AH         LINE#         203
+  C:0911H         LINE#         204
+  -------         ENDPROC       MAIN
+  -------         ENDMOD        MAIN
+
+  -------         MODULE        ?C?CLDPTR
+  C:0A30H         PUBLIC        ?C?CLDPTR
+  -------         ENDMOD        ?C?CLDPTR
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_DELAY?MAIN
+
+******************************************************************************
+* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 01E4H BYTE (23%) *
+******************************************************************************
+
+Program Size: data=21.0 xdata=0 code=653
+LINK/LOCATE RUN COMPLETE.  1 WARNING(S),  0 ERROR(S)
