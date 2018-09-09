@@ -16,7 +16,7 @@ typedef unsigned int   U16;      /* defined for unsigned 16-bits integer variabl
 
 //----------------IO口定义区--------------------//
 sbit  P2_0  = P2^0 ;
-sbit fan=P2^5;
+
 //----------------定义区--------------------//
 U8  U8temp;
 U8  humidity_H,humidity_L,temperature_H,temperature_L,checkdata;
@@ -183,23 +183,4 @@ void main()
 
 }
 
-/**************************串口中断处理函数*****************************/
-void uart() interrupt 4
-{
-	uchar a;
-	if(RI==1)
-	{
-		RI=0;
-		a=SBUF;
-		if(a=='0')
-		{
-			fan=0;
-		}
-		if(a=='1')
-		{
-			fan=1;
-		}
-		
-	}
-    
-}
+
